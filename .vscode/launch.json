@@ -1,0 +1,51 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "this",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+        },
+        {
+            "name": "train",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/train.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": ["configs_comp/lsknet/lsk_s_ema_fpn_1x_dota_le90.py", "--gpu-ids", "2"],
+            // "env": {
+            //     "CUDA_VISIBLE_DEVICES": "2"
+            // }
+        },
+        {
+            "name": "test",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/test.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": ["configs_comp/lsknet/lsk_s_ema_fpn_3x_data30_le90_debug.py", "work_dirs/lsk_s_ema_fpn_1x_dota_le90/epoch_33.pth", "--format-only", "--show-dir", "work_dirs/lsk_s_ema_fpn_1x_dota_le90_debug/visualization", "--eval-options", "submission_dir=work_dirs/lsk_s_ema_fpn_1x_dota_le90_debug/output"],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0"
+            }
+        },
+        {
+            "name": "visual_aug_dataset",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tools/analysis_tools/visual_aug_data.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": ["configs_comp/rrtmdet/rotated_rtmdet_l-3x-aug_blur_noise-data40.py", "--output-dir","./tmp_visual_dataset/", "--not-show", "--nums", "10"],
+            "env": {
+            }
+        }
+    ]
+}
