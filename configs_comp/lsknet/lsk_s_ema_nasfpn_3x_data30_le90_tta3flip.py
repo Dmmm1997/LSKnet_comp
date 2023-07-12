@@ -1,11 +1,12 @@
 _base_ = [
-    '../_base_/datasets/fairv1.py', '../_base_/schedules/schedule_1x.py',
-    '../_base_/default_runtime.py'
+    './_base_/datasets/data30_tta_3flip.py', './_base_/schedules/schedule_2x.py',
+    './_base_/default_runtime.py', './_base_/tta.py'
 ]
 
 angle_version = 'le90'
-gpu_number = 8
-fp16 = dict(loss_scale='dynamic')
+gpu_number = 2
+# fp16 = dict(loss_scale='dynamic')
+# load_from = 'pretrain_weights/lsk_s_ema_fpn_1x_dota_le90_20230212-30ed4041.pth'
 model = dict(
     type='OrientedRCNN',
     backbone=dict(
@@ -13,18 +14,23 @@ model = dict(
         embed_dims=[64, 128, 320, 512],
         drop_rate=0.1,
         drop_path_rate=0.1,
-        depths=[2,2,4,2],
-        init_cfg=dict(type='Pretrained', checkpoint="/data/pretrained/lsk_s_backbone.pth.tar"),
+        depths=[2, 2, 4, 2],
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint="pretrain_weights/lsk_s_backbone-e9d2e551.pth"),
         norm_cfg=dict(type='SyncBN', requires_grad=True)),
     neck=dict(
-        type='FPN',
+        type='NASFPN',
         in_channels=[64, 128, 320, 512],
-        out_channels=256,
-        num_outs=5),
+        out_channels=320,
+        num_outs=5,
+        stack_times=7,
+        start_level=1,
+        norm_cfg=dict(type='SyncBN', requires_grad=True)),
     rpn_head=dict(
         type='OrientedRPNHead',
-        in_channels=256,
-        feat_channels=256,
+        in_channels=320,
+        feat_channels=320,
         version=angle_version,
         anchor_generator=dict(
             type='AnchorGenerator',
@@ -49,14 +55,17 @@ model = dict(
                 out_size=7,
                 sample_num=2,
                 clockwise=True),
-            out_channels=256,
+            out_channels=320,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
             type='RotatedShared2FCBBoxHead',
-            in_channels=256,
+            in_channels=320,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=37,
+            num_classes=133,
+            num_shared_fcs=2,
+            num_cls_fcs=2,
+            num_reg_fcs=2,
             bbox_coder=dict(
                 type='DeltaXYWHAOBBoxCoder',
                 angle_range=angle_version,
@@ -130,6 +139,9 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
     dict(type='RResize', img_scale=(1024, 1024)),
+    dict(type="RandomBrightness", prob=0.3, gamma_range=[0.2, 1.2]),
+    dict(type="RandomBlur", prob=0.5, value_range=[3, 15]),
+    dict(type="RandomNoise", prob=0.5, sigma_range=[3, 25]),
     dict(
         type='RRandomFlip',
         flip_ratio=[0.25, 0.25, 0.25],
@@ -149,15 +161,19 @@ train_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=1,
-    workers_per_gpu=2,
+    samples_per_gpu=4,
+    workers_per_gpu=4,
     train=dict(pipeline=train_pipeline, version=angle_version),
     val=dict(version=angle_version),
     test=dict(version=angle_version))
 
+custom_hooks = [
+    dict(type='ExpMomentumEMAHook', total_iter=1853 * 24, priority=49)
+]
+
 optimizer = dict(
     _delete_=True,
     type='AdamW',
-    lr=0.0001 ,# /8*gpu_number,
+    lr=0.0002,  #/8*gpu_number,
     betas=(0.9, 0.999),
     weight_decay=0.05)

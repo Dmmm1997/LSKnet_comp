@@ -1,12 +1,13 @@
 _base_ = [
-    './_base_/datasets/data30.py', './_base_/schedules/schedule_1x.py',
-    './_base_/default_runtime.py', './_base_/tta.py'
+    './_base_/datasets/data30_tta_3flip.py',
+    './_base_/schedules/schedule_1x.py', './_base_/default_runtime.py',
+    './_base_/tta.py'
 ]
 
 angle_version = 'le90'
 gpu_number = 2
 # fp16 = dict(loss_scale='dynamic')
-# load_from = 'pretrain_weights/lsk_s_ema_fpn_1x_dota_le90_20230212-30ed4041.pth'
+load_from = 'work_dirs/lsk_s_ema_fpn_1x_data30_le90_aug-noise-blur-brightness_tta2flip_finetune/epoch_12.pth'
 model = dict(
     type='OrientedRCNN',
     backbone=dict(
@@ -15,9 +16,9 @@ model = dict(
         drop_rate=0.1,
         drop_path_rate=0.1,
         depths=[2, 2, 4, 2],
-        init_cfg=dict(
-            type='Pretrained',
-            checkpoint="pretrain_weights/lsk_s_backbone-e9d2e551.pth"),
+        # init_cfg=dict(
+        #     type='Pretrained',
+        #     checkpoint="pretrain_weights/lsk_s_backbone-e9d2e551.pth"),
         norm_cfg=dict(type='SyncBN', requires_grad=True)),
     neck=dict(
         type='FPN',
@@ -132,9 +133,14 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='RResize', img_scale=(1024, 1024)),
-    dict(type="RandomBlur", prob=0.5, value_range=[3, 15]),
-    dict(type="RandomNoise", prob=0.5, sigma_range=[3, 25]),
+    dict(
+        type='RResize',
+        img_scale=(1024, 1024)),
+    # dict(type='RRandomCrop', crop_size=(1024, 1024)),
+    dict(type="RandomBrightness", prob=0.3, gamma_range=[0.2, 1.0]),
+    dict(type="RandomBlur", prob=0.3, value_range=[3, 15]),
+    dict(type="RandomNoise", prob=0.3, sigma_range=[3, 25]),
+    # dict(type="RMosaic", img_scale=(1024,1024), prob=0.5),
     dict(
         type='RRandomFlip',
         flip_ratio=[0.25, 0.25, 0.25],
@@ -155,7 +161,7 @@ train_pipeline = [
 
 data = dict(
     samples_per_gpu=4,
-    workers_per_gpu=2,
+    workers_per_gpu=4,
     train=dict(pipeline=train_pipeline, version=angle_version),
     val=dict(version=angle_version),
     test=dict(version=angle_version))
@@ -167,6 +173,6 @@ custom_hooks = [
 optimizer = dict(
     _delete_=True,
     type='AdamW',
-    lr=0.0002,  #/8*gpu_number,
+    lr=0.0002/2,  #/8*gpu_number,
     betas=(0.9, 0.999),
     weight_decay=0.05)

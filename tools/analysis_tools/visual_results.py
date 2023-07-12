@@ -19,11 +19,11 @@ def parse_args():
     parser.add_argument(
         '--out-dir',
         default=
-        "work_dirs/lsk_s_ema_fpn_1x_dota_le90_tta_2flip/output_ep33/visual_csv",
+        "work_dirs/lsk_s_ema_fpn_1x_data30_le90_aug-noise-blur-brightness_tta2flip_finetune_again/ep12_tta3flip/visual_csv",
         help='Path to output file')
     parser.add_argument(
         '--csvfile',
-        default="work_dirs/lsk_s_ema_fpn_1x_dota_le90_tta_2flip/output_ep33/results.csv",
+        default="work_dirs/lsk_s_ema_fpn_1x_data30_le90_aug-noise-blur-brightness_tta2flip_finetune_again/ep12_tta3flip/results.csv",
         help='Path to output file')
     parser.add_argument(
         '--nums', default=200, type=int, help='Path to output file')

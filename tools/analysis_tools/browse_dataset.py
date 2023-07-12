@@ -6,8 +6,9 @@ from pathlib import Path
 
 import mmcv
 from mmcv import Config, DictAction
-from mmdet.datasets.builder import build_dataset
+from mmdet.datasets.builder import build_dataset, build_dataloader
 
+from mmdet.datasets.pipelines import Compose
 from mmrotate.core.visualization import imshow_det_rbboxes
 
 
@@ -26,6 +27,8 @@ def parse_args():
         type=str,
         help='If there is no display interface, you can save it')
     parser.add_argument('--not-show', default=True, action='store_true')
+    parser.add_argument('--seed', default=666, type=int)
+    parser.add_argument('--nums', default=50, type=int)
     parser.add_argument(
         '--show-interval',
         type=float,

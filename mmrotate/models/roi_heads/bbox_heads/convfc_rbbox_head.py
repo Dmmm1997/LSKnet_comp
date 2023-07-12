@@ -210,14 +210,23 @@ class RotatedConvFCBBoxHead(RotatedBBoxHead):
 class RotatedShared2FCBBoxHead(RotatedConvFCBBoxHead):
     """Shared2FC RBBox head."""
 
-    def __init__(self, fc_out_channels=1024, *args, **kwargs):
+    def __init__(self,
+                 fc_out_channels=1024,
+                 num_shared_convs=0,
+                 num_shared_fcs=2,
+                 num_cls_convs=0,
+                 num_cls_fcs=0,
+                 num_reg_convs=0,
+                 num_reg_fcs=0,
+                 *args,
+                 **kwargs):
         super(RotatedShared2FCBBoxHead, self).__init__(
-            num_shared_convs=0,
-            num_shared_fcs=2,
-            num_cls_convs=0,
-            num_cls_fcs=0,
-            num_reg_convs=0,
-            num_reg_fcs=0,
+            num_shared_convs=num_shared_convs,
+            num_shared_fcs=num_shared_fcs,
+            num_cls_convs=num_cls_convs,
+            num_cls_fcs=num_cls_fcs,
+            num_reg_convs=num_reg_convs,
+            num_reg_fcs=num_reg_fcs,
             fc_out_channels=fc_out_channels,
             *args,
             **kwargs)

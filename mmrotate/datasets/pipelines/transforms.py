@@ -316,7 +316,7 @@ class RRandomCrop(RandomCrop):
                  crop_type='absolute',
                  allow_negative_crop=False,
                  iof_thr=0.7,
-                 version='oc'):
+                 version='le90'):
         self.version = version
         self.iof_thr = iof_thr
         super(RRandomCrop, self).__init__(crop_size, crop_type,
@@ -368,7 +368,7 @@ class RRandomCrop(RandomCrop):
 
             valid_inds = box_iou_rotated(
                 torch.tensor(bboxes), torch.tensor(windows),
-                mode='iof').numpy().squeeze() > self.iof_thr
+                mode='iof').numpy().squeeze(-1) > self.iof_thr
 
             # If the crop does not contain any gt-bbox area and
             # allow_negative_crop is False, skip this image.

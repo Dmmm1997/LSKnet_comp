@@ -1,5 +1,5 @@
 _base_ = [
-    './_base_/datasets/data30.py', './_base_/schedules/schedule_1x.py',
+    './_base_/datasets/data30_tta_3flip.py', './_base_/schedules/schedule_3x.py',
     './_base_/default_runtime.py', './_base_/tta.py'
 ]
 
@@ -133,7 +133,8 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
     dict(type='RResize', img_scale=(1024, 1024)),
-    dict(type="RandomBlur", prob=0.5, value_range=[3, 15]),
+    dict(type="RandomBrightness", prob=0.3, gamma_range=[0.2, 1.2]),
+    dict(type="RandomBlur", prob=0.3, value_range=[3, 15]),
     dict(type="RandomNoise", prob=0.5, sigma_range=[3, 25]),
     dict(
         type='RRandomFlip',
@@ -155,13 +156,13 @@ train_pipeline = [
 
 data = dict(
     samples_per_gpu=4,
-    workers_per_gpu=2,
+    workers_per_gpu=4,
     train=dict(pipeline=train_pipeline, version=angle_version),
     val=dict(version=angle_version),
     test=dict(version=angle_version))
 
 custom_hooks = [
-    dict(type='ExpMomentumEMAHook', total_iter=2780 * 12, priority=49)
+    dict(type='ExpMomentumEMAHook', total_iter=2780 * 36, priority=49)
 ]
 
 optimizer = dict(

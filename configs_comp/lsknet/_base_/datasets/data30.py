@@ -13,12 +13,29 @@ train_pipeline = [
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
 ]
+
+val_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='MultiScaleFlipAug',
+        img_scale=(1024, 1024),
+        flip=False,
+        flip_direction=["horizontal"],
+        transforms=[
+            dict(type='RResize'),
+            dict(type='Normalize', **img_norm_cfg),
+            dict(type='Pad', size_divisor=32),
+            dict(type='DefaultFormatBundle'),
+            dict(type='Collect', keys=['img'])
+        ])
+]
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
         img_scale=(1024, 1024),
-        flip=True,
+        flip=False,
         flip_direction=["horizontal"],
         transforms=[
             dict(type='RResize'),
@@ -40,7 +57,7 @@ data = dict(
         type=dataset_type,
         ann_file=data_root + 'trainval/annfiles/',
         img_prefix=data_root + 'trainval/images/',
-        pipeline=test_pipeline),
+        pipeline=val_pipeline),
     test=dict(
         type=dataset_type,
         ann_file=data_root + 'test_fs/images/',
